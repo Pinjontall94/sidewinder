@@ -29,4 +29,21 @@ class LeafNode(HTMLNode):
         super().__init__(tag, value, children=None, props=props)
 
     def to_html(self):
-        return f"<{self.tag}>{self.value}</{self.tag}>"
+        if self.tag is None:
+            return f"{self.value}"
+        else:
+            return f"<{self.tag}>{self.value}</{self.tag}>"
+    
+
+class ParentNode(HTMLNode):
+    def __init__(self, tag, children, props=None) -> None:
+        super().__init__(tag, value=None, children=children, props=props)
+
+    def to_html(self):
+        parent_open_tag = f'<{self.tag}>'
+        parent_close_tag = f'</{self.tag}>'
+        inner_html = ''
+        for leaf in self.children:
+            inner_html += leaf.to_html()
+        return parent_open_tag + inner_html + parent_close_tag
+        
