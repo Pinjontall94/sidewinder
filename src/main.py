@@ -1,5 +1,5 @@
 from textnode import TextNode, TextType
-from htmlnode import HTMLNode, LeafNode
+from htmlnode import HTMLNode, LeafNode, ParentNode
 
 dummy_text_node = TextNode("This is a text node",
                            TextType.BOLD, "https://www.boot.dev")
@@ -14,6 +14,10 @@ dummy_html_node = HTMLNode(
 )
 leaf1 = LeafNode("p", "This is a paragraph of text.")
 leaf2 = LeafNode("a", "Click me!", {"href": "https://www.google.com"})
+
+parent_fail = ParentNode("div")
+
+print(parent_fail)
 print(dummy_text_node)
 print(dummy_html_node)
 print(leaf1.to_html())
