@@ -36,8 +36,14 @@ class LeafNode(HTMLNode):
     
 
 class ParentNode(HTMLNode):
-    def __init__(self, tag, children, props=None) -> None:
+    def __init__(self, tag=None, children=None, props=None) -> None:
         super().__init__(tag, value=None, children=children, props=props)
+        if self.tag is None:
+            raise ValueError("ParentNode 'tag' field cannot be None")
+        elif self.children is None:
+            raise ValueError("ParentNode 'children' field must contain a list")
+        else:
+            pass
 
     def to_html(self):
         parent_open_tag = f'<{self.tag}>'
