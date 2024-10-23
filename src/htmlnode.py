@@ -22,3 +22,11 @@ class HTMLNode:
         for key, val in self.props.items():
             props_repr += f' {key}="{val}"'  # leading space is important!
         return props_repr
+
+
+class LeafNode(HTMLNode):
+    def __init__(self, tag, value, props=None) -> None:
+        super().__init__(tag, value, children=None, props=props)
+
+    def to_html(self):
+        return f"<{self.tag}>{self.value}</{self.tag}>"
