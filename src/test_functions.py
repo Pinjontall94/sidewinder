@@ -1,10 +1,10 @@
 import unittest
 from textnode import TextNode, TextType
 from htmlnode import LeafNode
-from functions import text_node_to_html_node
+from functions import text_node_to_html_node, split_nodes_delimiter
 
 
-class TestFunctions(unittest.TestCase):
+class TestTextNodeToHTMLNode(unittest.TestCase):
     normal_node = TextNode("i'm normal", TextType.NORMAL)
     bold_node = TextNode("i'm super srs rn", TextType.BOLD)
     italic_node = TextNode("i'm spicy", TextType.ITALIC)
@@ -17,31 +17,31 @@ class TestFunctions(unittest.TestCase):
     )
     dummy_node = TextNode("i'm invalid", TextType.WRONG)
 
-    def test_text_to_html_normal(self):
+    def test_normal(self):
         self.assertEqual(
             text_node_to_html_node(self.normal_node).to_html(),
             LeafNode(None, "i'm normal").to_html(),
         )
 
-    def test_text_to_html_bold(self):
+    def test_bold(self):
         self.assertEqual(
             text_node_to_html_node(self.bold_node).to_html(),
             LeafNode("b", "i'm super srs rn").to_html(),
         )
 
-    def test_text_to_html_italic(self):
+    def test_italic(self):
         self.assertEqual(
             text_node_to_html_node(self.italic_node).to_html(),
             LeafNode("i", "i'm spicy").to_html(),
         )
 
-    def test_text_to_html_code(self):
+    def test_code(self):
         self.assertEqual(
             text_node_to_html_node(self.code_node).to_html(),
             LeafNode("code", "beep boop i'm code").to_html(),
         )
 
-    def test_text_to_html_link(self):
+    def test_link(self):
         self.assertEqual(
             text_node_to_html_node(self.link_node).to_html(),
             LeafNode(
@@ -49,7 +49,7 @@ class TestFunctions(unittest.TestCase):
             ).to_html(),
         )
 
-    def test_text_to_html_image(self):
+    def test_image(self):
         self.assertEqual(
             text_node_to_html_node(self.image_node).to_html(),
             LeafNode(
@@ -59,9 +59,44 @@ class TestFunctions(unittest.TestCase):
             ).to_html(),
         )
 
-    def test_text_to_html_invalid(self):
-        with self.assertRaises(ValueError):
-            text_node_to_html_node(self.dummy_node)
+
+class TestSplitNodesDelimiter(unittest.TestCase):
+    node_italic = TextNode("this is *sarcastic* business", TextType.TEXT)
+    node_bold = TextNode("this is **serious** business", TextType.TEXT)
+    node_code = TextNode("this is `beep boop` business", TextType.TEXT)
+    split_node_italic = split_nodes_delimiter([node_italic], "*", TextType.ITALIC)
+    split_node_bold = split_nodes_delimiter([node_bold], "**", TextType.BOLD)
+    split_node_code = split_nodes_delimiter([node_code], "`", TextType.CODE)
+
+    def test_italic(self):
+        self.assertEqual(
+            self.split_node_italic,
+            [
+                TextNode("this is ", TextType.TEXT),
+                TextNode("sarcastic", TextType.ITALIC),
+                TextNode(" business", TextType.TEXT),
+            ],
+        )
+
+    def test_bold(self):
+        self.assertEqual(
+            self.split_node_bold,
+            [
+                TextNode("this is ", TextType.TEXT),
+                TextNode("serious", TextType.BOLD),
+                TextNode(" business", TextType.TEXT),
+            ],
+        )
+
+    def test_code(self):
+        self.assertEqual(
+            self.split_node_code,
+            [
+                TextNode("this is ", TextType.TEXT),
+                TextNode("beep boop", TextType.CODE),
+                TextNode(" business", TextType.TEXT),
+            ],
+        )
 
 
 if __name__ == "__main__":
