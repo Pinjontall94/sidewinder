@@ -15,7 +15,6 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
     image_node = TextNode(
         "i'm alt text", TextType.IMAGE, "https://picsum.photos/200/200"
     )
-    dummy_node = TextNode("i'm invalid", TextType.WRONG)
 
     def test_normal(self):
         self.assertEqual(
@@ -61,8 +60,8 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
 
 
 class TestSplitNodesDelimiter(unittest.TestCase):
-    node_italic = TextNode("this is *sarcastic* business", TextType.TEXT)
-    node_bold = TextNode("this is **serious** business", TextType.TEXT)
+    node_italic = TextNode("this is *a lot of sarcastic* business", TextType.TEXT)
+    node_bold = TextNode("this is **some serious** business", TextType.TEXT)
     node_code = TextNode("this is `beep boop` business", TextType.TEXT)
     split_node_italic = split_nodes_delimiter([node_italic], "*", TextType.ITALIC)
     split_node_bold = split_nodes_delimiter([node_bold], "**", TextType.BOLD)
@@ -73,7 +72,7 @@ class TestSplitNodesDelimiter(unittest.TestCase):
             self.split_node_italic,
             [
                 TextNode("this is ", TextType.TEXT),
-                TextNode("sarcastic", TextType.ITALIC),
+                TextNode("a lot of sarcastic", TextType.ITALIC),
                 TextNode(" business", TextType.TEXT),
             ],
         )
@@ -83,7 +82,7 @@ class TestSplitNodesDelimiter(unittest.TestCase):
             self.split_node_bold,
             [
                 TextNode("this is ", TextType.TEXT),
-                TextNode("serious", TextType.BOLD),
+                TextNode("some serious", TextType.BOLD),
                 TextNode(" business", TextType.TEXT),
             ],
         )
