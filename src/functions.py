@@ -44,6 +44,10 @@ def split_nodes_delimiter(
                 pass
             elif index % 2 != 0:
                 # Case: delimited text
+                # NOTE: when modifying for nested delimiters, don't just append as text_type
+                # use .find() or .index() to determine outer and inner nesting
+                # NOTE: Could implement nested with recursive call and eliminating delimiter
+                # and text_type args in favor of {delim -> type} dict
                 split_nodes_list.append(TextNode(text, text_type))
             else:
                 # Case: non-delimited text
