@@ -59,13 +59,13 @@ def split_nodes_delimiter(
 
 def extract_markdown_images(text):
     try:
-        return re.findall(r"(?<=!)\[(.*?)\]\((.*?)\)", text)
+        return re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
     except Exception as e:
         print(f"extract_markdown_images error: {e}")
 
 
 def extract_markdown_links(text):
     try:
-        return re.findall(r"(?<!!)\[(.*?)\]\((.*?)\)", text)
+        return re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
     except Exception as e:
         print(f"extract_markdown_links error: {e}")
