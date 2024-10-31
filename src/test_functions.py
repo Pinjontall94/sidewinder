@@ -1,7 +1,12 @@
 import unittest
 from textnode import TextNode, TextType
 from htmlnode import LeafNode
-from functions import text_node_to_html_node, split_nodes_delimiter
+from functions import (
+    text_node_to_html_node,
+    split_nodes_delimiter,
+    extract_markdown_images,
+    extract_markdown_links,
+)
 
 
 class TestTextNodeToHTMLNode(unittest.TestCase):
@@ -95,6 +100,41 @@ class TestSplitNodesDelimiter(unittest.TestCase):
                 TextNode("beep boop", TextType.CODE),
                 TextNode(" business", TextType.TEXT),
             ],
+        )
+
+
+class TestExtractMarkdown(unittest.TestCase):
+    def test_extract_markdown_images(self):
+        text = " ".join(
+            (
+                "This is text with ![the ferry building](https://unsplash.com/photos/w-palm-trees-in-front-of-clock-tower-HwCKc2ej_NM)",
+                "and ![the golden gate bridge](https://unsplash.com/photos/a-view-of-the-golden-gate-bridge-in-the-fog-UdWZNa83lG8)",
+            )
+        )
+        self.assertEqual(
+            extract_markdown_images(text),
+            [
+                (
+                    "the ferry building",
+                    "https://unsplash.com/photos/w-palm-trees-in-front-of-clock-tower-HwCKc2ej_NM",
+                ),
+                (
+                    "the golden gate bridge",
+                    "https://unsplash.com/photos/a-view-of-the-golden-gate-bridge-in-the-fog-UdWZNa83lG8",
+                ),
+            ],
+        )
+
+    def test_extract_markdown_links(self):
+        text = " ".join(
+            (
+                "This is text with [EFF](https://www.eff.org/)",
+                "and [Codeberg](https://codeberg.org/) links",
+            )
+        )
+        self.assertEqual(
+            extract_markdown_links(text),
+            [("EFF", "https://www.eff.org/"), ("Codeberg", "https://codeberg.org/")],
         )
 
 
