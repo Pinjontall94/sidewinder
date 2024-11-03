@@ -6,6 +6,8 @@ from functions import (
     split_nodes_delimiter,
     extract_markdown_images,
     extract_markdown_links,
+    split_nodes_image,
+    split_nodes_link,
 )
 
 
@@ -135,6 +137,106 @@ class TestExtractMarkdown(unittest.TestCase):
         self.assertEqual(
             extract_markdown_links(text),
             [("EFF", "https://www.eff.org/"), ("Codeberg", "https://codeberg.org/")],
+        )
+
+
+class TestSplitImagesLinks(unittest.TestCase):
+    image_node_start = TextNode(
+            "![the golden gate bridge](https://unsplash.com/photos/a-view-of-the-golden-gate-bridge-in-the-fog-UdWZNa83lG8) in all its glory",
+            TextType.TEXT
+            )
+
+    image_node_middle = TextNode(
+            "Behold:![the golden gate bridge](https://unsplash.com/photos/a-view-of-the-golden-gate-bridge-in-the-fog-UdWZNa83lG8) the bridge in fog",
+            TextType.TEXT
+            )
+
+    image_node_end = TextNode(
+            "Behold, ![the golden gate bridge](https://unsplash.com/photos/a-view-of-the-golden-gate-bridge-in-the-fog-UdWZNa83lG8)",
+            TextType.TEXT
+            )
+
+    link_node_start = TextNode(
+            "[Here's](https://gnu.org) a link to GNU",
+            TextType.TEXT
+            )
+
+    link_node_middle = TextNode(
+            "And a [link](https://eff.org) to EFF",
+            TextType.TEXT
+            )
+
+    link_node_end = TextNode(
+            "Have a link to [my website](http://catgirlwebinteractive.com/)",
+            TextType.TEXT
+            )
+
+    def test_split_nodes_image_start(self):
+        self.assertEqual(
+                split_nodes_image([self.image_node_start]),
+                [
+                    TextNode(
+                        "the golden gate bridge",
+                        TextType.IMAGE,
+                        "https://unsplash.com/photos/a-view-of-the-golden-gate-bridge-in-the-fog-UdWZNa83lG8"
+                        ),
+                    TextNode(" in all its glory", TextType.TEXT),
+                ],
+        )
+
+    def test_split_nodes_image_middle(self):
+        self.assertEqual(
+                split_nodes_image([self.image_node_middle]),
+                [
+                    TextNode("Behold:", TextType.TEXT),
+                    TextNode(
+                        "the golden gate bridge",
+                        TextType.IMAGE,
+                        "https://unsplash.com/photos/a-view-of-the-golden-gate-bridge-in-the-fog-UdWZNa83lG8"
+                        ),
+                    TextNode(" the bridge in fog", TextType.TEXT),
+                ],
+        )
+
+    def test_split_nodes_image_end(self):
+        self.assertEqual(
+                split_nodes_image([self.image_node_end]),
+                [
+                    TextNode("Behold, ", TextType.TEXT),
+                    TextNode(
+                        "the golden gate bridge",
+                        TextType.IMAGE,
+                        "https://unsplash.com/photos/a-view-of-the-golden-gate-bridge-in-the-fog-UdWZNa83lG8"
+                        ),
+                ],
+        )
+
+    def test_split_nodes_link_start(self):
+        self.assertEqual(
+                split_nodes_link([self.link_node_start]),
+                [
+                    TextNode("Here's", TextType.LINK, "https://gnu.org"),
+                    TextNode(" a link to GNU", TextType.TEXT)
+                ],
+        )
+
+    def test_split_nodes_link_middle(self):
+        self.assertEqual(
+                split_nodes_link([self.link_node_middle]),
+                [
+                    TextNode("And a ", TextType.TEXT),
+                    TextNode("link", TextType.LINK, "https://eff.org"),
+                    TextNode(" to EFF", TextType.TEXT),
+                ],
+        )
+
+    def test_split_nodes_link_end(self):
+        self.assertEqual(
+                split_nodes_link([self.link_node_end]),
+                [
+                    TextNode("Have a link to ", TextType.TEXT),
+                    TextNode("my website", TextType.LINK, "http://catgirlwebinteractive.com/"),
+                ],
         )
 
 

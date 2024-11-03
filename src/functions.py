@@ -69,3 +69,97 @@ def extract_markdown_links(text):
         return re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
     except Exception as e:
         print(f"extract_markdown_links error: {e}")
+
+
+def split_nodes_image(nodes):
+    result_nodes = []
+    for node in nodes:
+        image = extract_markdown_images(node.text)
+        if not image:
+            # If no images, simply pass node to result list
+            result_nodes.append(node)
+        else:
+            # Only grab first image; for multiple images per node, use recursion
+            alt_text, image_url = image[0][0], image[0][1]
+            split_nodes_list = []
+            split_text = node.text.split(f"![{alt_text}]({image_url})", 1)
+            if len(split_text) == 2 and not split_text[0]:
+                # Case: image in beginning of the node
+                # Append image node, then text node
+                split_nodes_list.extend(
+                    [
+                        TextNode(alt_text, TextType.IMAGE, image_url),
+                        TextNode(split_text[1], TextType.TEXT),
+                    ]
+                )
+            elif len(split_text) == 2 and not split_text[1]:
+                # Case: image in the end of the node
+                split_nodes_list.extend(
+                    [
+                        TextNode(split_text[0], TextType.TEXT),
+                        TextNode(alt_text, TextType.IMAGE, image_url),
+                    ]
+                )
+            elif len(split_text) == 2 and split_text[0] and split_text[1]:
+                # Case: image in the middle
+                split_nodes_list.extend(
+                    [
+                        TextNode(split_text[0], TextType.TEXT),
+                        TextNode(alt_text, TextType.IMAGE, image_url),
+                        TextNode(split_text[1], TextType.TEXT),
+                    ]
+                )
+            else:
+                raise ValueError(
+                        "Invalid node passed to split_nodes_image: ",
+                        node
+                        )
+        result_nodes.extend(split_nodes_list)
+    return result_nodes
+
+
+def split_nodes_link(nodes):
+    result_nodes = []
+    for node in nodes:
+        link = extract_markdown_links(node.text)
+        if not link:
+            # If no links, simply pass node to result list
+            result_nodes.append(node)
+        else:
+            # Only grab first link; for multiple links per node, use recursion
+            link_text, link_url = link[0][0], link[0][1]
+            split_nodes_list = []
+            split_text = node.text.split(f"[{link_text}]({link_url})", 1)
+            if len(split_text) == 2 and not split_text[0]:
+                # Case: link in beginning of the node
+                # Append link node, then text node
+                split_nodes_list.extend(
+                    [
+                        TextNode(link_text, TextType.LINK, link_url),
+                        TextNode(split_text[1], TextType.TEXT),
+                    ]
+                )
+            elif len(split_text) == 2 and not split_text[1]:
+                # Case: link in the end of the node
+                split_nodes_list.extend(
+                    [
+                        TextNode(split_text[0], TextType.TEXT),
+                        TextNode(link_text, TextType.LINK, link_url),
+                    ]
+                )
+            elif len(split_text) == 2 and split_text[0] and split_text[1]:
+                # Case: link in the middle
+                split_nodes_list.extend(
+                    [
+                        TextNode(split_text[0], TextType.TEXT),
+                        TextNode(link_text, TextType.LINK, link_url),
+                        TextNode(split_text[1], TextType.TEXT),
+                    ]
+                )
+            else:
+                raise ValueError(
+                        "Invalid node passed to split_nodes_link: ",
+                        node
+                        )
+            result_nodes.extend(split_nodes_list)
+    return result_nodes
