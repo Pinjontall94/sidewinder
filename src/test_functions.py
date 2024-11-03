@@ -8,6 +8,7 @@ from functions import (
     extract_markdown_links,
     split_nodes_image,
     split_nodes_link,
+    text_to_text_nodes,
 )
 
 
@@ -235,8 +236,37 @@ class TestSplitImagesLinks(unittest.TestCase):
                 split_nodes_link([self.link_node_end]),
                 [
                     TextNode("Have a link to ", TextType.TEXT),
-                    TextNode("my website", TextType.LINK, "http://catgirlwebinteractive.com/"),
+                    TextNode(
+                        "my website",
+                        TextType.LINK,
+                        "http://catgirlwebinteractive.com/"
+                        ),
                 ],
+        )
+
+
+class TestTextToTextNodes(unittest.TestCase):
+    def test_text_to_text_nodes(self):
+        text = " ".join([
+                "This is some **bolded text** with an *italic* word",
+                "and some `monospace code` and an",
+                "![innocent image](https://knowyourmeme.com/photos/1207210)",
+                "and a [link](https://catgirlwebinteractive.com)",
+                ])
+        self.assertEqual(
+            text_to_text_nodes(text),
+            [
+                TextNode("This is some ", TextType.TEXT),
+                TextNode("bolded text", TextType.BOLD),
+                TextNode(" with an ", TextType.TEXT),
+                TextNode("italic", TextType.ITALIC),
+                TextNode(" word and some ", TextType.TEXT),
+                TextNode("monospace code", TextType.CODE),
+                TextNode(" and an ", TextType.TEXT),
+                TextNode("innocent image", TextType.IMAGE, "https://knowyourmeme.com/photos/1207210"),
+                TextNode(" and a ", TextType.TEXT),
+                TextNode("link", TextType.LINK, "https://catgirlwebinteractive.com"),
+            ]
         )
 
 
