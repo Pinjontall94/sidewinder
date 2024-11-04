@@ -1,7 +1,6 @@
 from typing import List
 from textnode import TextNode, TextType
 from htmlnode import LeafNode
-import pprint
 import re
 
 
@@ -110,10 +109,7 @@ def split_nodes_image(nodes):
                     ]
                 )
             else:
-                raise ValueError(
-                        "Invalid node passed to split_nodes_image: ",
-                        node
-                        )
+                raise ValueError("Invalid node passed to split_nodes_image: ", node)
         # import pdb; pdb.set_trace()
         result_nodes.extend(split_nodes_list)
     return result_nodes
@@ -158,27 +154,50 @@ def split_nodes_link(nodes):
                     ]
                 )
             else:
-                raise ValueError(
-                        "Invalid node passed to split_nodes_link: ",
-                        node
-                        )
+                raise ValueError("Invalid node passed to split_nodes_link: ", node)
             result_nodes.extend(split_nodes_list)
     return result_nodes
 
 
 def text_to_text_nodes(text):
     new_nodes = [TextNode(text, TextType.TEXT)]
-    pprint.pp(new_nodes)
     delimiter_type_map = {
         "**": TextType.BOLD,
         "*": TextType.ITALIC,
         "`": TextType.CODE,
     }
     for delimiter, text_type in delimiter_type_map.items():
-        print("\n\tdelimiter: ", delimiter, " text_type: ", text_type.value)
         new_nodes = split_nodes_delimiter(new_nodes, delimiter, text_type)
-        pprint.pp(new_nodes)
     new_nodes = split_nodes_image(new_nodes)
     new_nodes = split_nodes_link(new_nodes)
-    pprint.pp(new_nodes)
     return new_nodes
+
+
+def markdown_to_blocks(markdown: str) -> List[str]:
+    markdown_lines = markdown.split("\n")
+    markdown_lines = [line.strip() for line in markdown_lines]
+    result, block_text = [], []
+    in_multiline_block = False
+    for index, line in enumerate(markdown_lines):
+        if line and not in_multiline_block and not markdown_lines[index + 1]:
+            # Case: isolated line of text followed by empty line
+            result.append(line)
+        elif line and not in_multiline_block and markdown_lines[index + 1]:
+            # Case: first line of a multiline block
+            block_text.append(line)
+            in_multiline_block = True
+        elif line and in_multiline_block and markdown_lines[index + 1]:
+            # Case: line within the first and last lines of a block
+            block_text.append(line)
+        elif line and in_multiline_block and not markdown_lines[index + 1]:
+            # Case: last line of a multiline block
+            block_text.append(line)
+            result.append("\n".join(block_text))
+            block_text = []  # Clear the block_text list for any new blocks
+            in_multiline_block = False
+        elif not line:
+            # Case: empty line between blocks and isolated lines
+            pass
+        else:
+            raise Exception(f"markdown_to_blocks error: invalid line {line}")
+    return result

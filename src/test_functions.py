@@ -9,6 +9,7 @@ from functions import (
     split_nodes_image,
     split_nodes_link,
     text_to_text_nodes,
+    markdown_to_blocks,
 )
 
 
@@ -143,116 +144,109 @@ class TestExtractMarkdown(unittest.TestCase):
 
 class TestSplitImagesLinks(unittest.TestCase):
     image_node_start = TextNode(
-            "![the golden gate bridge](https://unsplash.com/photos/a-view-of-the-golden-gate-bridge-in-the-fog-UdWZNa83lG8) in all its glory",
-            TextType.TEXT
-            )
+        "![the golden gate bridge](https://unsplash.com/photos/a-view-of-the-golden-gate-bridge-in-the-fog-UdWZNa83lG8) in all its glory",
+        TextType.TEXT,
+    )
 
     image_node_middle = TextNode(
-            "Behold:![the golden gate bridge](https://unsplash.com/photos/a-view-of-the-golden-gate-bridge-in-the-fog-UdWZNa83lG8) the bridge in fog",
-            TextType.TEXT
-            )
+        "Behold:![the golden gate bridge](https://unsplash.com/photos/a-view-of-the-golden-gate-bridge-in-the-fog-UdWZNa83lG8) the bridge in fog",
+        TextType.TEXT,
+    )
 
     image_node_end = TextNode(
-            "Behold, ![the golden gate bridge](https://unsplash.com/photos/a-view-of-the-golden-gate-bridge-in-the-fog-UdWZNa83lG8)",
-            TextType.TEXT
-            )
+        "Behold, ![the golden gate bridge](https://unsplash.com/photos/a-view-of-the-golden-gate-bridge-in-the-fog-UdWZNa83lG8)",
+        TextType.TEXT,
+    )
 
-    link_node_start = TextNode(
-            "[Here's](https://gnu.org) a link to GNU",
-            TextType.TEXT
-            )
+    link_node_start = TextNode("[Here's](https://gnu.org) a link to GNU", TextType.TEXT)
 
-    link_node_middle = TextNode(
-            "And a [link](https://eff.org) to EFF",
-            TextType.TEXT
-            )
+    link_node_middle = TextNode("And a [link](https://eff.org) to EFF", TextType.TEXT)
 
     link_node_end = TextNode(
-            "Have a link to [my website](http://catgirlwebinteractive.com/)",
-            TextType.TEXT
-            )
+        "Have a link to [my website](http://catgirlwebinteractive.com/)", TextType.TEXT
+    )
 
     def test_split_nodes_image_start(self):
         self.assertEqual(
-                split_nodes_image([self.image_node_start]),
-                [
-                    TextNode(
-                        "the golden gate bridge",
-                        TextType.IMAGE,
-                        "https://unsplash.com/photos/a-view-of-the-golden-gate-bridge-in-the-fog-UdWZNa83lG8"
-                        ),
-                    TextNode(" in all its glory", TextType.TEXT),
-                ],
+            split_nodes_image([self.image_node_start]),
+            [
+                TextNode(
+                    "the golden gate bridge",
+                    TextType.IMAGE,
+                    "https://unsplash.com/photos/a-view-of-the-golden-gate-bridge-in-the-fog-UdWZNa83lG8",
+                ),
+                TextNode(" in all its glory", TextType.TEXT),
+            ],
         )
 
     def test_split_nodes_image_middle(self):
         self.assertEqual(
-                split_nodes_image([self.image_node_middle]),
-                [
-                    TextNode("Behold:", TextType.TEXT),
-                    TextNode(
-                        "the golden gate bridge",
-                        TextType.IMAGE,
-                        "https://unsplash.com/photos/a-view-of-the-golden-gate-bridge-in-the-fog-UdWZNa83lG8"
-                        ),
-                    TextNode(" the bridge in fog", TextType.TEXT),
-                ],
+            split_nodes_image([self.image_node_middle]),
+            [
+                TextNode("Behold:", TextType.TEXT),
+                TextNode(
+                    "the golden gate bridge",
+                    TextType.IMAGE,
+                    "https://unsplash.com/photos/a-view-of-the-golden-gate-bridge-in-the-fog-UdWZNa83lG8",
+                ),
+                TextNode(" the bridge in fog", TextType.TEXT),
+            ],
         )
 
     def test_split_nodes_image_end(self):
         self.assertEqual(
-                split_nodes_image([self.image_node_end]),
-                [
-                    TextNode("Behold, ", TextType.TEXT),
-                    TextNode(
-                        "the golden gate bridge",
-                        TextType.IMAGE,
-                        "https://unsplash.com/photos/a-view-of-the-golden-gate-bridge-in-the-fog-UdWZNa83lG8"
-                        ),
-                ],
+            split_nodes_image([self.image_node_end]),
+            [
+                TextNode("Behold, ", TextType.TEXT),
+                TextNode(
+                    "the golden gate bridge",
+                    TextType.IMAGE,
+                    "https://unsplash.com/photos/a-view-of-the-golden-gate-bridge-in-the-fog-UdWZNa83lG8",
+                ),
+            ],
         )
 
     def test_split_nodes_link_start(self):
         self.assertEqual(
-                split_nodes_link([self.link_node_start]),
-                [
-                    TextNode("Here's", TextType.LINK, "https://gnu.org"),
-                    TextNode(" a link to GNU", TextType.TEXT)
-                ],
+            split_nodes_link([self.link_node_start]),
+            [
+                TextNode("Here's", TextType.LINK, "https://gnu.org"),
+                TextNode(" a link to GNU", TextType.TEXT),
+            ],
         )
 
     def test_split_nodes_link_middle(self):
         self.assertEqual(
-                split_nodes_link([self.link_node_middle]),
-                [
-                    TextNode("And a ", TextType.TEXT),
-                    TextNode("link", TextType.LINK, "https://eff.org"),
-                    TextNode(" to EFF", TextType.TEXT),
-                ],
+            split_nodes_link([self.link_node_middle]),
+            [
+                TextNode("And a ", TextType.TEXT),
+                TextNode("link", TextType.LINK, "https://eff.org"),
+                TextNode(" to EFF", TextType.TEXT),
+            ],
         )
 
     def test_split_nodes_link_end(self):
         self.assertEqual(
-                split_nodes_link([self.link_node_end]),
-                [
-                    TextNode("Have a link to ", TextType.TEXT),
-                    TextNode(
-                        "my website",
-                        TextType.LINK,
-                        "http://catgirlwebinteractive.com/"
-                        ),
-                ],
+            split_nodes_link([self.link_node_end]),
+            [
+                TextNode("Have a link to ", TextType.TEXT),
+                TextNode(
+                    "my website", TextType.LINK, "http://catgirlwebinteractive.com/"
+                ),
+            ],
         )
 
 
 class TestTextToTextNodes(unittest.TestCase):
     def test_text_to_text_nodes(self):
-        text = " ".join([
+        text = " ".join(
+            [
                 "This is some **bolded text** with an *italic* word",
                 "and some `monospace code` and an",
                 "![innocent image](https://knowyourmeme.com/photos/1207210)",
                 "and a [link](https://catgirlwebinteractive.com)",
-                ])
+            ]
+        )
         self.assertEqual(
             text_to_text_nodes(text),
             [
@@ -263,10 +257,53 @@ class TestTextToTextNodes(unittest.TestCase):
                 TextNode(" word and some ", TextType.TEXT),
                 TextNode("monospace code", TextType.CODE),
                 TextNode(" and an ", TextType.TEXT),
-                TextNode("innocent image", TextType.IMAGE, "https://knowyourmeme.com/photos/1207210"),
+                TextNode(
+                    "innocent image",
+                    TextType.IMAGE,
+                    "https://knowyourmeme.com/photos/1207210",
+                ),
                 TextNode(" and a ", TextType.TEXT),
                 TextNode("link", TextType.LINK, "https://catgirlwebinteractive.com"),
+            ],
+        )
+
+
+class TestMarkdownToBlocks(unittest.TestCase):
+    block = "\n".join(
+        [
+            "# This is a heading.",
+            "",
+            "## This is a subheading.",
+            "",
+            "This is a paragraph with **some bolded** and *italic* and `monospaced words.`",
+            "",
+            "* This is the first item of a list in a list block",
+            "* This is the second item of said list",
+            "* This is the last line of the list and the end of the block",
+            "",
+            "",
+        ]
+    )
+
+    actual_block = markdown_to_blocks(block)
+
+    result_block = [
+        "# This is a heading.",
+        "## This is a subheading.",
+        "This is a paragraph with **some bolded** and *italic* and `monospaced words.`",
+        "\n".join(
+            [
+                "* This is the first item of a list in a list block",
+                "* This is the second item of said list",
+                "* This is the last line of the list and the end of the block",
             ]
+        ),
+    ]
+
+    def test_markdown_to_blocks(self):
+        self.assertEqual(
+            markdown_to_blocks(self.block),
+            self.result_block,
         )
 
 
