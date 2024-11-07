@@ -1,6 +1,6 @@
 from typing import List
 from textnode import TextNode, TextType
-from htmlnode import LeafNode
+from htmlnode import HTMLNode, LeafNode, ParentNode
 import re
 
 
@@ -201,3 +201,62 @@ def markdown_to_blocks(markdown: str) -> List[str]:
         else:
             raise Exception(f"markdown_to_blocks error: invalid line {line}")
     return result
+
+
+def block_to_block_type(block: List[str]) -> str:
+    "Returns a string representing an enum of the passed block's markdown type."
+    # NOTE: This code assumes well-formed markdown is passed, so it sacrifices
+    # complexity of checking every line of a block for code readability
+    block_lines = block.split("\n")
+    if len(block_lines) > 1:
+        first_line, last_line = block_lines[0], block_lines[-1]
+    else:
+        first_line, last_line = block, block
+
+    if re.findall(r"^#{1,6} ", first_line):
+        # Case: 1 to 6 starting pound signs, followed by a space
+        return "heading"
+    elif re.findall(r"^```", first_line) and re.findall(r"^```", last_line):
+        # Case: ```optional_language
+        #       monospaced code
+        #       ```
+        return "code"
+    elif re.findall(r"^> ", first_line):
+        # Case: > Block of
+        #       > quoted text
+        return "quote"
+    elif re.findall(r"^\* ", first_line):
+        # Case: * A list
+        #       * of unordered items
+        return "unordered_list"
+    elif re.findall(r"^\d\. ", first_line):
+        # Case: 1. A list
+        #       2. Where each item
+        #       3. Has a numbered order
+        for index, line in enumerate(block_lines):
+            print("block_lines:\n", block_lines)
+            num = int(re.findall(r"^\d\. ", line)[0][0])  # Turn match: "1. " into int 1
+            print("num: ", num)
+            if (index == 0 and num != 1) or (index != num - 1):
+                raise ValueError(
+                    f"block_to_block_type error: malformed line passed {line}"
+                )
+        return "ordered_list"
+    else:
+        return "paragraph"
+
+
+def markdown_to_html_node(markdown: str) -> ParentNode:
+    # Split markdown into blocks
+
+    # Loop over blocks
+    #   Find type of block
+    #   Depending on type, create new HTMLNode with appropriate data
+    #   Assign correct HTMLNode children to the block node
+    #     use text_node_to_html_node in text_to_children(text)
+    #     ^ returns List[HTMLNode] (repr of inline markdown)
+
+    # Make one ParentNode(tag="div") with all the processed blocks
+    # as its children
+
+    return None

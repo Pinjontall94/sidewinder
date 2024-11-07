@@ -10,6 +10,7 @@ from functions import (
     split_nodes_link,
     text_to_text_nodes,
     markdown_to_blocks,
+    block_to_block_type,
 )
 
 
@@ -268,7 +269,7 @@ class TestTextToTextNodes(unittest.TestCase):
         )
 
 
-class TestMarkdownToBlocks(unittest.TestCase):
+class TestMarkdownBlocks(unittest.TestCase):
     block = "\n".join(
         [
             "# This is a heading.",
@@ -285,8 +286,6 @@ class TestMarkdownToBlocks(unittest.TestCase):
         ]
     )
 
-    actual_block = markdown_to_blocks(block)
-
     result_block = [
         "# This is a heading.",
         "## This is a subheading.",
@@ -300,11 +299,46 @@ class TestMarkdownToBlocks(unittest.TestCase):
         ),
     ]
 
+    block_list = [
+        "# This is a top level heading",
+        "#### This is rank4 subheading",
+        "\n".join(["```", "#!/bin/bash", 'echo "This is a code block"', "```"]),
+        "\n".join(["> This is a quote", "> by someone very important"]),
+        "\n".join(
+            ["* This is the first unordered list item", "* And this is the last one"]
+        ),
+        "\n".join(["1. The order of these items matter, though!", "2. GOTO 1"]),
+        "\n".join(
+            ["This is just some regular old paragraph text", "nothing fancy here"]
+        ),
+    ]
+
+    block_types = [
+        "heading",
+        "heading",
+        "code",
+        "quote",
+        "unordered_list",
+        "ordered_list",
+        "paragraph",
+    ]
+
     def test_markdown_to_blocks(self):
         self.assertEqual(
             markdown_to_blocks(self.block),
             self.result_block,
         )
+
+    def test_block_to_block_type(self):
+        result_actual = []
+        for block in self.block_list:
+            result_actual.append(block_to_block_type(block))
+        self.assertEqual(result_actual, self.block_types)
+
+
+class TestMarkdownToHTMLNode(unittest.TestCase):
+    def test_markdown_to_html_node(self):
+        raise NotImplementedError
 
 
 if __name__ == "__main__":
