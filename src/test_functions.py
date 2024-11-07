@@ -1,6 +1,6 @@
 import unittest
 from textnode import TextNode, TextType
-from htmlnode import LeafNode
+from htmlnode import LeafNode, ParentNode
 from functions import (
     text_node_to_html_node,
     split_nodes_delimiter,
@@ -299,6 +299,27 @@ class TestMarkdownBlocks(unittest.TestCase):
         ),
     ]
 
+    block2 = "\n".join(
+        [
+            "This is a paragraph line followed by an ordered list:",
+            "",
+            "1. This item has highest priority",
+            "2. Then this follows",
+            "3. Not ending in a newline is part of this test",
+        ]
+    )
+
+    result_block2 = [
+        "This is a paragraph line followed by an ordered list:",
+        "\n".join(
+            [
+                "1. This item has highest priority",
+                "2. Then this follows",
+                "3. Not ending in a newline is part of this test",
+            ]
+        ),
+    ]
+
     block_list = [
         "# This is a top level heading",
         "#### This is rank4 subheading",
@@ -329,6 +350,9 @@ class TestMarkdownBlocks(unittest.TestCase):
             self.result_block,
         )
 
+    def test_markdown_to_blocks_no_newline_end(self):
+        self.assertEqual(markdown_to_blocks(self.block2), self.result_block2)
+
     def test_block_to_block_type(self):
         result_actual = []
         for block in self.block_list:
@@ -337,8 +361,81 @@ class TestMarkdownBlocks(unittest.TestCase):
 
 
 class TestMarkdownToHTMLNode(unittest.TestCase):
+    md = "\n".join(
+        [
+            "# This is a header",
+            "",
+            "Here is some paragraph text with a **bolded phrase**, an *italic* word",
+            "and some `monospace code`." "",
+            "## This is a subheading",
+            "",
+            "> This is a very famous quote",
+            "> by someone very important",
+            "> or some such.",
+            "",
+            "What follows are two lists:",
+            "* This first one",
+            "* is unordered",
+            "and the second:",
+            "1. Is ordered",
+            "2. By importance",
+            "3. Of the elements",
+        ]
+    )
+
+    html_node = (
+        ParentNode(
+            tag="div",
+            children=[
+                LeafNode("h1", "This is a header"),
+                ParentNode(
+                    "p",
+                    children=[
+                        LeafNode(None, "Here is some paragraph text with a "),
+                        LeafNode("b", "bolded phrase"),
+                        LeafNode(None, ", an "),
+                        LeafNode("i", "italic"),
+                        LeafNode(None, " word, and some "),
+                        LeafNode("blockquote", "monospace code"),
+                        LeafNode(None, "."),
+                    ],
+                ),
+                LeafNode("h2", "This is a subheading"),
+                ParentNode(
+                    "blockquote",
+                    [
+                        LeafNode(
+                            None,
+                            " ".join(
+                                [
+                                    "This is a very famous quote",
+                                    "by someone very important",
+                                    "or some such",
+                                ]
+                            ),
+                        )
+                    ],
+                ),
+                LeafNode("p", "What follows is two lists:"),
+                ParentNode(
+                    "ul",
+                    [LeafNode("li", "The first one"), LeafNode("li", "is unordered")],
+                ),
+                LeafNode("p", "and the second:"),
+                ParentNode(
+                    "ol",
+                    [
+                        LeafNode("li", "Is ordered"),
+                        LeafNode("li", "By importance"),
+                        LeafNode("li", "Of the elements"),
+                    ],
+                ),
+            ],
+        ),
+    )
+
     def test_markdown_to_html_node(self):
-        raise NotImplementedError
+        self.assertEqual(markdown_to_blocks(self.md), self.html_node)
 
 
 if __name__ == "__main__":

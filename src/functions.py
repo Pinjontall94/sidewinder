@@ -179,9 +179,16 @@ def markdown_to_blocks(markdown: str) -> List[str]:
     result, block_text = [], []
     in_multiline_block = False
     for index, line in enumerate(markdown_lines):
+        print("index: ", index, "line:\n", line)
         if line and not in_multiline_block and not markdown_lines[index + 1]:
             # Case: isolated line of text followed by empty line
             result.append(line)
+        elif line and in_multiline_block and index == len(markdown_lines) - 1:
+            # Case: last line of block ends the markdown text
+            block_text.append(line)
+            result.append("\n".join(block_text))
+            block_text = []
+            in_multiline_block = False
         elif line and not in_multiline_block and markdown_lines[index + 1]:
             # Case: first line of a multiline block
             block_text.append(line)
@@ -234,9 +241,7 @@ def block_to_block_type(block: List[str]) -> str:
         #       2. Where each item
         #       3. Has a numbered order
         for index, line in enumerate(block_lines):
-            print("block_lines:\n", block_lines)
             num = int(re.findall(r"^\d\. ", line)[0][0])  # Turn match: "1. " into int 1
-            print("num: ", num)
             if (index == 0 and num != 1) or (index != num - 1):
                 raise ValueError(
                     f"block_to_block_type error: malformed line passed {line}"
@@ -248,15 +253,17 @@ def block_to_block_type(block: List[str]) -> str:
 
 def markdown_to_html_node(markdown: str) -> ParentNode:
     # Split markdown into blocks
-
+    block_list = markdown_to_blocks(markdown)
     # Loop over blocks
-    #   Find type of block
-    #   Depending on type, create new HTMLNode with appropriate data
-    #   Assign correct HTMLNode children to the block node
-    #     use text_node_to_html_node in text_to_children(text)
-    #     ^ returns List[HTMLNode] (repr of inline markdown)
+    for block in block_list:
+        block_type = block_to_block_type(block)
+        #   Depending on type, create new HTMLNode with appropriate data
+        #   Assign correct HTMLNode children to the block node
+        #     use text_node_to_html_node in text_to_children(text)
+        #     ^ returns List[HTMLNode] (repr of inline markdown)
 
-    # Make one ParentNode(tag="div") with all the processed blocks
-    # as its children
+        # Make one ParentNode(tag="div") with all the processed blocks
+        # as its children
+        pass
 
-    return None
+    return ParentNode(tag="div", children=None)
