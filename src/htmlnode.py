@@ -1,11 +1,5 @@
 class HTMLNode:
-    def __init__(
-            self,
-            tag=None,
-            value=None,
-            children=None,
-            props=None
-    ) -> None:
+    def __init__(self, tag=None, value=None, children=None, props=None) -> None:
         self.tag = tag
         self.value = value
         self.children = children
@@ -18,7 +12,7 @@ class HTMLNode:
         raise NotImplementedError
 
     def props_to_html(self):
-        props_repr = ''
+        props_repr = ""
         for key, val in self.props.items():
             props_repr += f' {key}="{val}"'  # leading space is important!
         return props_repr
@@ -33,7 +27,7 @@ class LeafNode(HTMLNode):
             return f"{self.value}"
         else:
             return f"<{self.tag}>{self.value}</{self.tag}>"
-    
+
 
 class ParentNode(HTMLNode):
     def __init__(self, tag=None, children=None, props=None) -> None:
@@ -45,11 +39,21 @@ class ParentNode(HTMLNode):
         else:
             pass
 
+    def __iter__(self):
+        self.index = 0
+        return self
+
+    def __next__(self):
+        if self.index >= len(self.children):
+            raise StopIteration
+        child_node = self.children[self.index]
+        self.index += 1
+        return child_node
+
     def to_html(self):
-        parent_open_tag = f'<{self.tag}>'
-        parent_close_tag = f'</{self.tag}>'
-        inner_html = ''
+        parent_open_tag = f"<{self.tag}>"
+        parent_close_tag = f"</{self.tag}>"
+        inner_html = ""
         for leaf in self.children:
             inner_html += leaf.to_html()
         return parent_open_tag + inner_html + parent_close_tag
-        
