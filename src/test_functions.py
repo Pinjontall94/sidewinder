@@ -1,6 +1,6 @@
 import unittest
 from textnode import TextNode, TextType
-from htmlnode import LeafNode, ParentNode
+from htmlnode import HTMLNode, LeafNode, ParentNode
 from functions import (
     text_node_to_html_node,
     split_nodes_delimiter,
@@ -11,6 +11,7 @@ from functions import (
     text_to_text_nodes,
     markdown_to_blocks,
     block_to_block_type,
+    markdown_to_html_node,
 )
 
 
@@ -239,6 +240,7 @@ class TestSplitImagesLinks(unittest.TestCase):
 
 
 class TestTextToTextNodes(unittest.TestCase):
+
     def test_text_to_text_nodes(self):
         text = " ".join(
             [
@@ -365,8 +367,8 @@ class TestMarkdownToHTMLNode(unittest.TestCase):
         [
             "# This is a header",
             "",
-            "Here is some paragraph text with a **bolded phrase**, an *italic* word",
-            "and some `monospace code`." "",
+            "Here is some paragraph text with a **bolded phrase**, an *italic* word, and some `monospace code`.",
+            "",
             "## This is a subheading",
             "",
             "> This is a very famous quote",
@@ -380,62 +382,82 @@ class TestMarkdownToHTMLNode(unittest.TestCase):
             "1. Is ordered",
             "2. By importance",
             "3. Of the elements",
+            "",
+            "```c",
+            "int main(void) { return 0; }",
+            "```",
         ]
     )
 
-    html_node = (
-        ParentNode(
-            tag="div",
-            children=[
-                LeafNode("h1", "This is a header"),
-                ParentNode(
-                    "p",
-                    children=[
-                        LeafNode(None, "Here is some paragraph text with a "),
-                        LeafNode("b", "bolded phrase"),
-                        LeafNode(None, ", an "),
-                        LeafNode("i", "italic"),
-                        LeafNode(None, " word, and some "),
-                        LeafNode("blockquote", "monospace code"),
-                        LeafNode(None, "."),
-                    ],
-                ),
-                LeafNode("h2", "This is a subheading"),
-                ParentNode(
-                    "blockquote",
-                    [
-                        LeafNode(
-                            None,
-                            " ".join(
-                                [
-                                    "This is a very famous quote",
-                                    "by someone very important",
-                                    "or some such",
-                                ]
-                            ),
-                        )
-                    ],
-                ),
-                LeafNode("p", "What follows is two lists:"),
-                ParentNode(
-                    "ul",
-                    [LeafNode("li", "The first one"), LeafNode("li", "is unordered")],
-                ),
-                LeafNode("p", "and the second:"),
-                ParentNode(
-                    "ol",
-                    [
-                        LeafNode("li", "Is ordered"),
-                        LeafNode("li", "By importance"),
-                        LeafNode("li", "Of the elements"),
-                    ],
-                ),
-            ],
-        ),
+    html_node = ParentNode(
+        tag="div",
+        children=[
+            HTMLNode("h1", "This is a header"),
+            HTMLNode(
+                "p",
+                children=[
+                    LeafNode(None, "Here is some paragraph text with a "),
+                    LeafNode("b", "bolded phrase"),
+                    LeafNode(None, ", an "),
+                    LeafNode("i", "italic"),
+                    LeafNode(None, " word, and some "),
+                    LeafNode("code", "monospace code"),
+                    LeafNode(None, "."),
+                ],
+            ),
+            LeafNode("h2", "This is a subheading"),
+            ParentNode(
+                "blockquote",
+                [
+                    LeafNode(
+                        None,
+                        " ".join(
+                            [
+                                "This is a very famous quote",
+                                "by someone very important",
+                                "or some such",
+                            ]
+                        ),
+                    )
+                ],
+            ),
+            LeafNode("p", "What follows is two lists:"),
+            ParentNode(
+                "ul",
+                [LeafNode("li", "The first one"), LeafNode("li", "is unordered")],
+            ),
+            LeafNode("p", "and the second:"),
+            ParentNode(
+                "ol",
+                [
+                    LeafNode("li", "Is ordered"),
+                    LeafNode("li", "By importance"),
+                    LeafNode("li", "Of the elements"),
+                ],
+            ),
+            ParentNode("pre", [LeafNode("code", "int main(void) { return 0; }")]),
+        ],
     )
 
+    def assertNodesEqual(self, node1: HTMLNode, node2: HTMLNode):
+        if node1.tag != node2.tag:
+            raise Exception(f"Nodes differ in tag:\n{node1}\n{node2}")
+        elif node1.props != node2.props:
+            raise Exception(f"Nodes differ in props:\n{node1}\n{node2}")
+        elif node1.value != node2.value:
+            raise Exception(f"Nodes differ in value:\n{node1}\n{node2}")
+        else:
+            for child in node1.children:
+                # START HERE
+                raise NotImplementedError
+
     def test_markdown_to_html_node(self):
-        self.assertEqual(markdown_to_blocks(self.md), self.html_node)
+        from pprint import pprint
+        actual = markdown_to_html_node(self.md).children[1]
+        expected = self.html_node.children[1]
+        pprint(actual)
+        pprint(expected)
+        self.assertNodesEqual(actual, expected)
 
 
 if __name__ == "__main__":

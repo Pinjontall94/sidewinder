@@ -179,7 +179,6 @@ def markdown_to_blocks(markdown: str) -> List[str]:
     result, block_text = [], []
     in_multiline_block = False
     for index, line in enumerate(markdown_lines):
-        print("index: ", index, "line:\n", line)
         if line and not in_multiline_block and not markdown_lines[index + 1]:
             # Case: isolated line of text followed by empty line
             result.append(line)
@@ -251,19 +250,63 @@ def block_to_block_type(block: List[str]) -> str:
         return "paragraph"
 
 
+def text_to_children(text: str) -> List[HTMLNode]:
+    text_nodes = text_to_text_nodes(text)
+    # return [text_node_to_html_node(text_node) for text_node in text_nodes]
+    result = []
+    for node in text_nodes:
+        if node.text_type == "text":
+            result.append(HTMLNode(None, node.text))
+        else:
+            result.append(text_node_to_html_node(node))
+    return result
+
+
 def markdown_to_html_node(markdown: str) -> ParentNode:
     # Split markdown into blocks
     block_list = markdown_to_blocks(markdown)
     # Loop over blocks
+    children = []
     for block in block_list:
         block_type = block_to_block_type(block)
+        block_lines = block.split("\n")
         #   Depending on type, create new HTMLNode with appropriate data
-        #   Assign correct HTMLNode children to the block node
-        #     use text_node_to_html_node in text_to_children(text)
-        #     ^ returns List[HTMLNode] (repr of inline markdown)
-
-        # Make one ParentNode(tag="div") with all the processed blocks
-        # as its children
-        pass
-
-    return ParentNode(tag="div", children=None)
+        match block_type:
+            case "heading":
+                heading = block_lines[0]
+                hashes = heading.split(" ")[0]
+                num_hashtags = 0
+                for hashtag in hashes:
+                    num_hashtags += 1
+                trimmed_heading = heading[num_hashtags + 1 :]
+                children.append(HTMLNode(f"h{num_hashtags}", trimmed_heading))
+            case "code":
+                middle_of_block = "\n".join(block_lines[1:-1])
+                children.append(ParentNode("pre", [LeafNode("code", middle_of_block)]))
+            case "quote":
+                trimmed_block = "\n".join([line[2:] for line in block_lines])
+                children.append(
+                    ParentNode(
+                        "blockquote", ParentNode("p", text_to_children(trimmed_block))
+                    )
+                )
+            case "unordered_list":
+                list_elements = []
+                for line in block_lines:
+                    trimmed_line = line[2:]  # * ^from here onward
+                    list_elements.append(
+                        ParentNode("li", text_to_children(trimmed_line))
+                    )
+                children.append(ParentNode("ul", list_elements))
+            case "ordered_list":
+                list_elements = []
+                for line in block_lines:
+                    trimmed_line = line[3:]  # 1. ^from here onward
+                    list_elements.append(
+                        ParentNode("li", text_to_children(trimmed_line))
+                    )
+                children.append(ParentNode("ol", list_elements))
+            case _:
+                # Treat any other block as a paragraph automatically
+                children.append(ParentNode("p", text_to_children(block)))
+    return ParentNode("div", children)
