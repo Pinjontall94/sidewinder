@@ -3,3 +3,4 @@ venv/
 public/index.html
 public/styles.css
 *.pyc
+public/

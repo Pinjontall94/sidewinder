@@ -375,11 +375,10 @@ class TestMarkdownToHTMLNode(unittest.TestCase):
             "> by someone very important",
             "> or some such.",
             "",
-            "What follows are two lists:",
             "* This first one",
-            "* is unordered",
-            "and the second:",
-            "1. Is ordered",
+            "* is *unordered*",
+            "",
+            "1. **Is ordered**",
             "2. By importance",
             "3. Of the elements",
             "",
@@ -411,28 +410,31 @@ class TestMarkdownToHTMLNode(unittest.TestCase):
                 [
                     LeafNode(
                         None,
-                        " ".join(
+                        "\n".join(
                             [
                                 "This is a very famous quote",
                                 "by someone very important",
-                                "or some such",
+                                "or some such.",
                             ]
                         ),
                     )
                 ],
             ),
-            LeafNode("p", "What follows is two lists:"),
             ParentNode(
                 "ul",
-                [LeafNode("li", "The first one"), LeafNode("li", "is unordered")],
+                [
+                    ParentNode("li", [LeafNode(None, "This first one")]),
+                    ParentNode(
+                        "li", [LeafNode(None, "is "), LeafNode("i", "unordered")]
+                    ),
+                ],
             ),
-            LeafNode("p", "and the second:"),
             ParentNode(
                 "ol",
                 [
-                    LeafNode("li", "Is ordered"),
-                    LeafNode("li", "By importance"),
-                    LeafNode("li", "Of the elements"),
+                    ParentNode("li", [LeafNode("b", "Is ordered")]),
+                    ParentNode("li", [LeafNode(None, "By importance")]),
+                    ParentNode("li", [LeafNode(None, "Of the elements")]),
                 ],
             ),
             ParentNode("pre", [LeafNode("code", "int main(void) { return 0; }")]),
@@ -446,15 +448,17 @@ class TestMarkdownToHTMLNode(unittest.TestCase):
             raise Exception(f"Nodes differ in props:\n{node1}\n{node2}")
         elif node1.value != node2.value:
             raise Exception(f"Nodes differ in value:\n{node1}\n{node2}")
+        elif node1.children and node2.children:
+            for child1, child2 in zip(node1.children, node2.children):
+                self.assertNodesEqual(child1, child2)
         else:
-            for child in node1.children:
-                # START HERE
-                raise NotImplementedError
+            return None
 
     def test_markdown_to_html_node(self):
         from pprint import pprint
-        actual = markdown_to_html_node(self.md).children[1]
-        expected = self.html_node.children[1]
+
+        actual = markdown_to_html_node(self.md)
+        expected = self.html_node
         pprint(actual)
         pprint(expected)
         self.assertNodesEqual(actual, expected)

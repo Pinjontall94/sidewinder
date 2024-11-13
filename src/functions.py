@@ -252,11 +252,10 @@ def block_to_block_type(block: List[str]) -> str:
 
 def text_to_children(text: str) -> List[HTMLNode]:
     text_nodes = text_to_text_nodes(text)
-    # return [text_node_to_html_node(text_node) for text_node in text_nodes]
     result = []
     for node in text_nodes:
         if node.text_type == "text":
-            result.append(HTMLNode(None, node.text))
+            result.append(LeafNode(None, node.text))
         else:
             result.append(text_node_to_html_node(node))
     return result
@@ -294,17 +293,29 @@ def markdown_to_html_node(markdown: str) -> ParentNode:
                 list_elements = []
                 for line in block_lines:
                     trimmed_line = line[2:]  # * ^from here onward
-                    list_elements.append(
-                        ParentNode("li", text_to_children(trimmed_line))
-                    )
+                    processed_nodes = text_to_children(trimmed_line)
+                    if len(processed_nodes) == 1 and isinstance(
+                        processed_nodes[0], str
+                    ):
+                        # If processed_nodes is just one string of plain text
+                        new_li = LeafNode("li", processed_nodes[0])
+                    else:
+                        new_li = ParentNode("li", processed_nodes)
+                    list_elements.append(new_li)
                 children.append(ParentNode("ul", list_elements))
             case "ordered_list":
                 list_elements = []
                 for line in block_lines:
                     trimmed_line = line[3:]  # 1. ^from here onward
-                    list_elements.append(
-                        ParentNode("li", text_to_children(trimmed_line))
-                    )
+                    processed_nodes = text_to_children(trimmed_line)
+                    if len(processed_nodes) == 1 and isinstance(
+                        processed_nodes[0], str
+                    ):
+                        # If processed_nodes is just one string of plain text
+                        new_li = LeafNode("li", processed_nodes[0])
+                    else:
+                        new_li = ParentNode("li", processed_nodes)
+                    list_elements.append(new_li)
                 children.append(ParentNode("ol", list_elements))
             case _:
                 # Treat any other block as a paragraph automatically
