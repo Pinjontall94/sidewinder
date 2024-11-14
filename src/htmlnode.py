@@ -25,8 +25,13 @@ class LeafNode(HTMLNode):
     def to_html(self):
         if self.tag is None:
             return f"{self.value}"
-        else:
+        elif self.props is None:
             return f"<{self.tag}>{self.value}</{self.tag}>"
+        else:
+            props_text = ""
+            for key, val in self.props.items():
+                props_text += f'{key}="{val}" '
+            return f"<{self.tag} {props_text}>{self.value}</{self.tag}>"
 
 
 class ParentNode(HTMLNode):
@@ -51,8 +56,14 @@ class ParentNode(HTMLNode):
         return child_node
 
     def to_html(self):
-        parent_open_tag = f"<{self.tag}>"
         parent_close_tag = f"</{self.tag}>"
+        if self.props:
+            props_text = ""
+            for key, val in self.props.items():
+                props_text += f'{key}="{val}" '
+                parent_open_tag = f"<{self.tag} {props_text}>"
+        else:
+            parent_open_tag = f"<{self.tag}>"
         inner_html = ""
         for leaf in self.children:
             inner_html += leaf.to_html()
