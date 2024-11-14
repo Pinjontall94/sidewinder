@@ -1,6 +1,7 @@
 from typing import List
 from textnode import TextNode, TextType
 from htmlnode import HTMLNode, LeafNode, ParentNode
+import os
 import re
 
 
@@ -278,7 +279,7 @@ def markdown_to_html_node(markdown: str) -> ParentNode:
                 for hashtag in hashes:
                     num_hashtags += 1
                 trimmed_heading = heading[num_hashtags + 1 :]
-                children.append(HTMLNode(f"h{num_hashtags}", trimmed_heading))
+                children.append(LeafNode(f"h{num_hashtags}", trimmed_heading))
             case "code":
                 middle_of_block = "\n".join(block_lines[1:-1])
                 children.append(ParentNode("pre", [LeafNode("code", middle_of_block)]))
@@ -321,3 +322,42 @@ def markdown_to_html_node(markdown: str) -> ParentNode:
                 # Treat any other block as a paragraph automatically
                 children.append(ParentNode("p", text_to_children(block)))
     return ParentNode("div", children)
+
+
+def extract_title(markdown):
+    md_lines = markdown.split("\n")
+    title_pattern = r"# .*"
+    for line in md_lines:
+        if match := re.findall(title_pattern, line):
+            # Grab the first match, strip off # and surrounding whitespace
+            return match[0].split("#")[1].strip()
+    # If no title is found, raise an exception here
+    raise EOFError("extract_title: No title found in markdown passed")
+
+
+def generate_page(md_path, template_path, html_path):
+    print(f"Making page from {md_path} to {html_path} with {template_path}")
+    with open(md_path, "r") as file:
+        md = file.read()
+    with open(template_path, "r") as file:
+        template = [line.rstrip() for line in file]
+
+    print("md: ", md)
+    converted_html = markdown_to_html_node(md)
+    title = extract_title(md)
+
+    html = []
+    for line in template:
+        if match := re.findall(r"{{ Title }}", line):
+            line = line.replace(match[0], title)
+            html.append(line)
+        elif match := re.findall(r"{{ Content }}", line):
+            line = line.replace(match[0], converted_html.to_html())
+            html.append(line)
+        else:
+            html.append(line)
+
+    if os.path.exists(os.path.dirname(html_path)):
+        with open(html_path, "w") as file:
+            for line in html:
+                file.write(line)

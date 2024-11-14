@@ -1,4 +1,5 @@
 import unittest
+import os
 from textnode import TextNode, TextType
 from htmlnode import HTMLNode, LeafNode, ParentNode
 from functions import (
@@ -12,6 +13,7 @@ from functions import (
     markdown_to_blocks,
     block_to_block_type,
     markdown_to_html_node,
+    extract_title,
 )
 
 
@@ -455,13 +457,25 @@ class TestMarkdownToHTMLNode(unittest.TestCase):
             return None
 
     def test_markdown_to_html_node(self):
-        from pprint import pprint
-
-        actual = markdown_to_html_node(self.md)
         expected = self.html_node
-        pprint(actual)
-        pprint(expected)
+        actual = markdown_to_html_node(self.md)
         self.assertNodesEqual(actual, expected)
+
+
+class TestMakeWebpage(unittest.TestCase):
+    proj_root = os.getcwd()
+    if os.path.split(proj_root)[1] != "sidewinder":
+        raise Exception(f"Invalid cwd: {proj_root}\nTry again in project root")
+
+    test_md = os.path.join(proj_root, "content", "test.md")
+    if not os.path.isfile(test_md):
+        raise Exception("test.md not found in sidewinder/content/")
+
+    with open(test_md, "r") as file:
+        test_md_text = file.read()
+
+    def test_extract_title(self):
+        self.assertEqual("This is a test!", extract_title(self.test_md_text))
 
 
 if __name__ == "__main__":

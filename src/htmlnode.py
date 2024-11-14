@@ -9,7 +9,7 @@ class HTMLNode:
         return f"HTMLNode(\n\t<{self.tag}>,\n\t{self.value},\n\tchildren: {self.children},\n\tprops: {self.props}\n)"
 
     def to_html(self):
-        raise NotImplementedError
+        raise NotImplementedError("Raw HTMLNode found: ", self.tag)
 
     def props_to_html(self):
         props_repr = ""

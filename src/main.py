@@ -1,6 +1,8 @@
 import os
 import shutil
 import logging
+from functions import generate_page
+
 logger = logging.getLogger(__name__)
 
 
@@ -21,15 +23,16 @@ def cp_recursive(source, destination):
 def main():
     logging.basicConfig(filename="sidewinder.log.txt", level=logging.INFO)
     cwd = os.getcwd()
-    if os.path.split(cwd)[1] == "src":
+    if os.path.basename(cwd) == "src":
         os.chdir("..")
         root = os.getcwd()
-    elif os.path.split(cwd)[1] != "sidewinder":
+    elif os.path.basename(cwd) != "sidewinder":
         raise Exception("Please rerun in either src or project root")
     else:
         root = os.getcwd()
     static = os.path.join(root, "static")
     public = os.path.join(root, "public")
+    content = os.path.join(root, "content")
     logger.info(f"cwd: {cwd}\nroot: {root}\nstatic: {static}\npublic {public}")
     if os.path.exists(public):
         # Delete any pre-existing /public/ dir
@@ -39,6 +42,12 @@ def main():
 
     # Recursively copy all of /static/ into /public/
     cp_recursive(static, public)
+
+    generate_page(
+        os.path.join(content, "index.md"),
+        os.path.join(root, "template.html"),
+        os.path.join(public, "index.html"),
+    )
 
 
 if __name__ == "__main__":
