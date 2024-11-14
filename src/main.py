@@ -1,7 +1,7 @@
 import os
 import shutil
 import logging
-from functions import generate_page
+from functions import generate_page_recursive
 
 logger = logging.getLogger(__name__)
 
@@ -43,11 +43,7 @@ def main():
     # Recursively copy all of /static/ into /public/
     cp_recursive(static, public)
 
-    generate_page(
-        os.path.join(content, "index.md"),
-        os.path.join(root, "template.html"),
-        os.path.join(public, "index.html"),
-    )
+    generate_page_recursive(content, os.path.join(root, "template.html"), public)
 
 
 if __name__ == "__main__":

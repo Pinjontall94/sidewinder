@@ -342,7 +342,6 @@ def generate_page(md_path, template_path, html_path):
     with open(template_path, "r") as file:
         template = [line.rstrip() for line in file]
 
-    print("md: ", md)
     converted_html = markdown_to_html_node(md)
     title = extract_title(md)
 
@@ -361,3 +360,18 @@ def generate_page(md_path, template_path, html_path):
         with open(html_path, "w") as file:
             for line in html:
                 file.write(line)
+
+
+def generate_page_recursive(content_path, template_path, dest_path):
+    for item in os.listdir(content_path):
+        item_path = os.path.join(content_path, item)
+        if os.path.isfile(item_path):
+            item_html = item.rsplit(".md")[0] + ".html"
+            generate_page(item_path, template_path, os.path.join(dest_path, item_html))
+        elif not os.path.isdir(item_path):
+            raise Exception(f"Item {item} is neither file nor directory.")
+        else:
+            # Must be a directory in this case
+            new_dest_dir = os.path.join(dest_path, item)
+            os.mkdir(new_dest_dir)
+            generate_page_recursive(item_path, template_path, new_dest_dir)
