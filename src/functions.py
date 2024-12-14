@@ -324,26 +324,51 @@ def markdown_to_html_node(markdown: str) -> ParentNode:
     return ParentNode("div", children)
 
 
-def extract_title(markdown):
-    md_lines = markdown.split("\n")
-    title_pattern = r"# .*"
-    for line in md_lines:
+def extract_title(markup, extension):
+    markup_lines = markup.split("\n")
+    if extension == ".md":
+        title_pattern = r"(?<=^#\s).*"
+    elif extension == ".html":
+        title_pattern = r"(?<=<title>).*(?=<\/title>)"
+    else:
+        raise ValueError("Invalid markup type")
+    for line in markup_lines:
         if match := re.findall(title_pattern, line):
-            # Grab the first match, strip off # and surrounding whitespace
-            return match[0].split("#")[1].strip()
+            # Grab the first match and remove surrounding whitespace
+            return match[0].strip()
     # If no title is found, raise an exception here
-    raise EOFError("extract_title: No title found in markdown passed")
+    raise EOFError("No title found in markup passed")
 
 
-def generate_page(md_path, template_path, html_path):
-    print(f"Making page from {md_path} to {html_path} with {template_path}")
-    with open(md_path, "r") as file:
-        md = file.read()
+def generate_page(markup_path, template_path, html_path):
+    print(f"Making page from {markup_path} to {html_path} with {template_path}")
+    _, extension = os.path.splitext(markup_path)
+    # TODO: dispatch on extension
+    with open(markup_path, "r") as file:
+        markup = file.read()
     with open(template_path, "r") as file:
         template = [line.rstrip() for line in file]
 
-    converted_html = markdown_to_html_node(md)
-    title = extract_title(md)
+    # NOTE: md conversion expects a preceding h1 with which to make the html
+    # page title. Directus export doesn't have this, but can grab it from the
+    # title tag. Converted html in an html context should swap <title> for <h1>
+    # and proceed as normal
+    #
+    # NOTE: Okay never mind. It makes more sense from a user perspective to
+    # take valid/normal html pages here, not just what my one-off extraction
+    # managed to grab.
+    # TODO: Modify the extraction code to generate valid unstyled html pages,
+    # then revisit this. We should only have to dispatch on markup filetype
+    # ONCE, and ideally the html path just skips the md steps and meets up with
+    # the md path thereafter
+    if extension == ".md":
+        title = extract_title(markup, extension)
+        content_html = markdown_to_html_node(markup).to_html()
+    elif extension == ".html":
+        # HTML doesn't care about newlines, so we don't need a bespoke function
+        title = re.findall(r"(?<=<title>).*(?=<\/title>)", markup)
+        # No conversion necessary if the input file is already valid HTML
+        content_html = markup
 
     html = []
     for line in template:
@@ -351,7 +376,7 @@ def generate_page(md_path, template_path, html_path):
             line = line.replace(match[0], title)
             html.append(line)
         elif match := re.findall(r"{{ Content }}", line):
-            line = line.replace(match[0], converted_html.to_html())
+            line = line.replace(match[0], content_html)
             html.append(line)
         else:
             html.append(line)
@@ -366,7 +391,7 @@ def generate_page_recursive(content_path, template_path, dest_path):
     for item in os.listdir(content_path):
         item_path = os.path.join(content_path, item)
         if os.path.isfile(item_path):
-            item_html = item.rsplit(".md")[0] + ".html"
+            item_html = os.path.splitext(item_path) + ".html"
             generate_page(item_path, template_path, os.path.join(dest_path, item_html))
         elif not os.path.isdir(item_path):
             raise Exception(f"Item {item} is neither file nor directory.")

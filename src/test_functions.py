@@ -464,18 +464,24 @@ class TestMarkdownToHTMLNode(unittest.TestCase):
 
 class TestMakeWebpage(unittest.TestCase):
     proj_root = os.getcwd()
+    content = os.path.join(proj_root, "content")
     if os.path.split(proj_root)[1] != "sidewinder":
         raise Exception(f"Invalid cwd: {proj_root}\nTry again in project root")
 
-    test_md = os.path.join(proj_root, "content", "test.md")
-    if not os.path.isfile(test_md):
-        raise Exception("test.md not found in sidewinder/content/")
+    test_md = os.path.join(content, "test.md")
+    test_html = os.path.join(content, "test.html")
+    if not os.path.isfile(test_md) or not os.path.isfile(test_html):
+        raise Exception("test markup not found in sidewinder/content/")
 
-    with open(test_md, "r") as file:
-        test_md_text = file.read()
+    def test_extract_title_md(self):
+        with open(self.test_md, "r") as file:
+            test_md_text = file.read()
+        self.assertEqual("This is a test!", extract_title(test_md_text, ".md"))
 
-    def test_extract_title(self):
-        self.assertEqual("This is a test!", extract_title(self.test_md_text))
+    def test_extract_title_html(self):
+        with open(self.test_html, "r") as file:
+            test_html_text = file.read()
+        self.assertEqual("This is a test!", extract_title(test_html_text, ".html"))
 
 
 if __name__ == "__main__":
