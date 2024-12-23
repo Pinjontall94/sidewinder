@@ -366,7 +366,7 @@ def generate_page(markup_path, template_path, html_path):
         content_html = markdown_to_html_node(markup).to_html()
     elif extension == ".html":
         # HTML doesn't care about newlines, so we don't need a bespoke function
-        title = re.findall(r"(?<=<title>).*(?=<\/title>)", markup)
+        title = re.findall(r"(?<=<title>).*(?=<\/title>)", markup)[0]
         # No conversion necessary if the input file is already valid HTML
         content_html = markup
 
@@ -391,7 +391,7 @@ def generate_page_recursive(content_path, template_path, dest_path):
     for item in os.listdir(content_path):
         item_path = os.path.join(content_path, item)
         if os.path.isfile(item_path):
-            item_html = os.path.splitext(item_path) + ".html"
+            item_html = os.path.splitext(item)[0] + ".html"
             generate_page(item_path, template_path, os.path.join(dest_path, item_html))
         elif not os.path.isdir(item_path):
             raise Exception(f"Item {item} is neither file nor directory.")
