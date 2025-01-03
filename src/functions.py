@@ -1,6 +1,7 @@
 from typing import List
 from textnode import TextNode, TextType
 from htmlnode import HTMLNode, LeafNode, ParentNode
+from bs4 import BeautifulSoup
 import os
 import re
 
@@ -343,32 +344,19 @@ def extract_title(markup, extension):
 def generate_page(markup_path, template_path, html_path):
     print(f"Making page from {markup_path} to {html_path} with {template_path}")
     _, extension = os.path.splitext(markup_path)
-    # TODO: dispatch on extension
     with open(markup_path, "r") as file:
         markup = file.read()
     with open(template_path, "r") as file:
         template = [line.rstrip() for line in file]
 
-    # NOTE: md conversion expects a preceding h1 with which to make the html
-    # page title. Directus export doesn't have this, but can grab it from the
-    # title tag. Converted html in an html context should swap <title> for <h1>
-    # and proceed as normal
-    #
-    # NOTE: Okay never mind. It makes more sense from a user perspective to
-    # take valid/normal html pages here, not just what my one-off extraction
-    # managed to grab.
-    # TODO: Modify the extraction code to generate valid unstyled html pages,
-    # then revisit this. We should only have to dispatch on markup filetype
-    # ONCE, and ideally the html path just skips the md steps and meets up with
-    # the md path thereafter
+    # Dispatch processing based on markup extension
     if extension == ".md":
         title = extract_title(markup, extension)
         content_html = markdown_to_html_node(markup).to_html()
     elif extension == ".html":
-        # HTML doesn't care about newlines, so we don't need a bespoke function
-        title = re.findall(r"(?<=<title>).*(?=<\/title>)", markup)[0]
-        # No conversion necessary if the input file is already valid HTML
-        content_html = markup
+        soup = BeautifulSoup(markup, "html.parser")
+        title = soup.title.get_text()
+        content_html = str(soup.body.encode_contents(), "utf-8")
 
     html = []
     for line in template:
@@ -380,10 +368,11 @@ def generate_page(markup_path, template_path, html_path):
             html.append(line)
         else:
             html.append(line)
+    formatted_html = BeautifulSoup("\n".join(html)).prettify(formatter="html5")
 
     if os.path.exists(os.path.dirname(html_path)):
         with open(html_path, "w") as file:
-            for line in html:
+            for line in formatted_html:
                 file.write(line)
 
 
