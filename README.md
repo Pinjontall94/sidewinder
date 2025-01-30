@@ -1,3 +1,4 @@
+![Sidewinder Logo](https://github.com/Pinjontall94/sidewinder/blob/main/sidewinder.png)
 # Sidewinder
 
 An open source static site generator with an emphasis on code readability, written in Python!
