@@ -1,3 +1,2 @@
 #!/bin/sh
-venv/bin/activate
-python -m idlelib.idle
+venv/bin/python -m idlelib.idle src/main.py
