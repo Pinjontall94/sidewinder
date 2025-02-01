@@ -9,14 +9,7 @@ Easily turn markdown and html pages into a cohesive website with consistent them
 1. Install [python 3](https://www.python.org/) if it's not already on your computer
 2. Download the latest sidewinder release and extract the zip file
 3. Navigate to your extracted sidewinder folder
-4. Create two folders here, named `content` and `static`
-5. Create a file in the `static` folder named `index.css`. While this file can
-be empty, Sidewinder will expect it to be there if you don't already have
-styling made for your site. This file will contain the web styling that will be
-applied to every generated webpage in the final site. See the
-[MDN CSS Tutorial](https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics)
-for more information on web styling if you're not already familiar!
-6. (Optional, Linux-only) If you'd like to have a desktop entry for sidewinder
+4. (Optional, Linux-only) If you'd like to have a desktop entry for sidewinder
 you can run from your app launcher directly:
   1. Copy the `Sidewinder.desktop` file to `$HOME/.local/share/applications/`
   2. Edit that copy such that `Path` key equals the full path to this folder
