@@ -9,17 +9,17 @@ Easily turn markdown and html pages into a cohesive website with consistent them
 3. Navigate to your extracted sidewinder folder
 4. (Optional, Linux-only) If you'd like to have a desktop entry for sidewinder
 you can run from your app launcher directly:
-    i. Copy the `Sidewinder.desktop` file to `$HOME/.local/share/applications/`
-    ii. Edit that copy such that `Path` key equals the full path to this folder
-    iii. Copy the sidewinder png icon to `$HOME/.icons/` (make the folder if you need to)
-    iv. Log out and log back in, or run `update-desktop-database` in a terminal
+    1. Copy the `Sidewinder.desktop` file to `$HOME/.local/share/applications/`
+    2. Edit that copy such that `Path` key equals the full path to this folder
+    3. Copy the sidewinder png icon to `$HOME/.icons/` (make the folder if you need to)
+    4. Log out and log back in, or run `update-desktop-database` in a terminal
 
 ## Usage
 1. Place markup files (either [markdown](https://www.markdownguide.org/) or 
 [html](https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content))
 in the content folder.
-2. (Optional) Edit the file named `template.html` to taste (while keeping the 
-`{{ Title }}` and `{{ Content }}` strings) 
+2. (Optional) Edit the file named `template.html` to taste (keeping the 
+`{{ Title }}` and `{{ Content }}` strings intact) 
 3. Run sidewinder:
     - Windows: Double click `sidewinder.bat`
     - MacOS: Double click `sidewinder.command`
