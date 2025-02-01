@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Sidewinder
+Path=<path to this folder>
+Exec=venv/bin/python src/main.py
+Icon=sidewinder
+Terminal=true
+Comment=Static Site Generator
