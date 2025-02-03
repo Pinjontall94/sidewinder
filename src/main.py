@@ -26,8 +26,6 @@ def main():
     if os.path.basename(cwd) == "src":
         os.chdir("..")
         root = os.getcwd()
-    elif os.path.basename(cwd) != "sidewinder":
-        raise Exception("Please rerun in either src or project root")
     else:
         root = os.getcwd()
     static = os.path.join(root, "static")

@@ -1,2 +1,2 @@
 @echo off
-venv\Scripts\python3 src\main.py
+venv\Scripts\python src\main.py
