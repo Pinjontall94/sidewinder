@@ -1,1 +1,1 @@
-venv\Scripts\python -m idlelib.idle src\main.py
+venv\Scripts\python3 -m idlelib.idle src\main.py
