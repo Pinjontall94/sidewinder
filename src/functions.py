@@ -2,6 +2,7 @@ from typing import List
 from textnode import TextNode, TextType
 from htmlnode import HTMLNode, LeafNode, ParentNode
 from bs4 import BeautifulSoup
+import logging
 import os
 import re
 
@@ -341,7 +342,16 @@ def extract_title(markup, extension):
     raise EOFError("No title found in markup passed")
 
 
-def generate_page(markup_path, template_path, html_path):
+def validate_html(soup: BeautifulSoup, logger: logging.Logger) -> None:
+    """Check if the passed html has pre-existing styles, throw error if so."""
+    if soup.head.find("link", {"rel": "stylesheet"}) is not None:
+        logger.error(f"Pre-existing styles found in soup: {soup.title.get_text()}")
+        raise ValueError(
+            "Styles not supported in Sidewinder input! Did you put something from 'public' into the 'content' folder?"
+        )
+
+
+def generate_page(markup_path, template_path, html_path, logger):
     print(f"Making page from {markup_path} to {html_path} with {template_path}")
     _, extension = os.path.splitext(markup_path)
     with open(markup_path, "r") as file:
@@ -355,6 +365,7 @@ def generate_page(markup_path, template_path, html_path):
         content_html = markdown_to_html_node(markup).to_html()
     elif extension == ".html":
         soup = BeautifulSoup(markup, "html.parser")
+        validate_html(soup, logger)  # raise error if pre-existing styles found
         title = soup.title.get_text()
         content_html = str(soup.body.encode_contents(), "utf-8")
 
@@ -368,7 +379,9 @@ def generate_page(markup_path, template_path, html_path):
             html.append(line)
         else:
             html.append(line)
-    formatted_html = BeautifulSoup("\n".join(html)).prettify(formatter="html5")
+    formatted_html = BeautifulSoup("\n".join(html), "html.parser").prettify(
+        formatter="html5"
+    )
 
     if os.path.exists(os.path.dirname(html_path)):
         with open(html_path, "w") as file:
@@ -376,16 +389,18 @@ def generate_page(markup_path, template_path, html_path):
                 file.write(line)
 
 
-def generate_page_recursive(content_path, template_path, dest_path):
+def generate_page_recursive(content_path, template_path, dest_path, logger):
     for item in os.listdir(content_path):
         item_path = os.path.join(content_path, item)
         if os.path.isfile(item_path):
             item_html = os.path.splitext(item)[0] + ".html"
-            generate_page(item_path, template_path, os.path.join(dest_path, item_html))
+            generate_page(
+                item_path, template_path, os.path.join(dest_path, item_html), logger
+            )
         elif not os.path.isdir(item_path):
             raise Exception(f"Item {item} is neither file nor directory.")
         else:
             # Must be a directory in this case
             new_dest_dir = os.path.join(dest_path, item)
             os.mkdir(new_dest_dir)
-            generate_page_recursive(item_path, template_path, new_dest_dir)
+            generate_page_recursive(item_path, template_path, new_dest_dir, logger)

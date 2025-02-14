@@ -2,6 +2,8 @@ import unittest
 import os
 from textnode import TextNode, TextType
 from htmlnode import HTMLNode, LeafNode, ParentNode
+from bs4 import BeautifulSoup
+import logging
 from functions import (
     text_node_to_html_node,
     split_nodes_delimiter,
@@ -14,8 +16,9 @@ from functions import (
     block_to_block_type,
     markdown_to_html_node,
     extract_title,
+    validate_html
 )
-
+logger = logging.getLogger(__name__)
 
 class TestTextNodeToHTMLNode(unittest.TestCase):
     normal_node = TextNode("i'm normal", TextType.NORMAL)
@@ -470,6 +473,7 @@ class TestMakeWebpage(unittest.TestCase):
 
     test_md = os.path.join(content, "test.md")
     test_html = os.path.join(content, "test.html")
+    test2_html = os.path.join(proj_root, "test/test2.html")
     if not os.path.isfile(test_md) or not os.path.isfile(test_html):
         raise Exception("test markup not found in sidewinder/content/")
 
@@ -482,6 +486,11 @@ class TestMakeWebpage(unittest.TestCase):
         with open(self.test_html, "r") as file:
             test_html_text = file.read()
         self.assertEqual("This is a test!", extract_title(test_html_text, ".html"))
+
+    def test_validate_html(self):
+        with open(self.test2_html, "r") as file:
+            invalid_soup = BeautifulSoup(file, "html.parser")
+        self.assertRaises(ValueError, validate_html, invalid_soup, logger)
 
 
 if __name__ == "__main__":

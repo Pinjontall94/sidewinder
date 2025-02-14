@@ -41,7 +41,9 @@ def main():
     # Recursively copy all of /static/ into /public/
     cp_recursive(static, public)
 
-    generate_page_recursive(content, os.path.join(root, "template.html"), public)
+    generate_page_recursive(
+        content, os.path.join(root, "template.html"), public, logger
+    )
 
 
 if __name__ == "__main__":
