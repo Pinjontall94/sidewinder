@@ -3,4 +3,5 @@ venv/
 public/index.html
 public/styles.css
 *.pyc
-public/
+public/.lsp
+*.log.txt
