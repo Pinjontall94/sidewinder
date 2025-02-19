@@ -5,3 +5,4 @@ public/styles.css
 *.pyc
 public/.lsp
 *.log.txt
+.lsp/
