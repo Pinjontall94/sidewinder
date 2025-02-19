@@ -1,7 +1,7 @@
 from typing import List
 from textnode import TextNode, TextType
 from htmlnode import HTMLNode, LeafNode, ParentNode
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 import logging
 import os
 import re
@@ -344,11 +344,25 @@ def extract_title(markup, extension):
 
 def validate_html(soup: BeautifulSoup, logger: logging.Logger) -> None:
     """Check if the passed html has pre-existing styles, throw error if so."""
-    if soup.head.find("link", {"rel": "stylesheet"}) is not None:
-        logger.error(f"Pre-existing styles found in soup: {soup.title.get_text()}")
+    head, body = soup.find("head"), soup.find("body")
+    title = Tag(soup.find("title"), name="title")
+    if title is None:
+        logger.error(f"No title found in soup: {soup}")
+        raise ValueError("No title found in soup!")
+    elif head is None:
+        logger.error(f"No head found in soup: {title.get_text()}")
+        raise ValueError("No head found in soup!")
+    elif body is None:
+        logger.error(f"No body found in soup: {title.get_text()}")
+        raise ValueError("No body found in soup!")
+    elif head.find("link", {"rel": "stylesheet"}) is not None:
+        logger.error(f"Pre-existing styles found in soup: {title.get_text()}")
         raise ValueError(
             "Styles not supported in Sidewinder input! Did you put something from 'public' into the 'content' folder?"
         )
+    else:
+        # Valid, unstyled HTML for Sidewinder input found
+        pass
 
 
 def generate_page(markup_path, template_path, html_path, logger):
