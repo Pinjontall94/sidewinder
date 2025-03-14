@@ -344,7 +344,8 @@ def extract_title(markup, extension):
 
 def validate_html(soup: BeautifulSoup, logger: logging.Logger) -> None:
     """Check if the passed html has pre-existing styles, throw error if so."""
-    head, body = soup.find("head"), soup.find("body")
+    head = soup.find("head")
+    body = soup.find("body")
     title = Tag(soup.find("title"), name="title")
     if title is None:
         logger.error(f"No title found in soup: {soup}")
@@ -382,6 +383,8 @@ def generate_page(markup_path, template_path, html_path, logger):
         validate_html(soup, logger)  # raise error if pre-existing styles found
         title = soup.title.get_text()
         content_html = str(soup.body.encode_contents(), "utf-8")
+    else:
+        raise ValueError("Unhandled markup case")
 
     html = []
     for line in template:
