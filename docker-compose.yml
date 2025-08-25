@@ -1,0 +1,7 @@
+services:
+  build-site:
+    image: pinjontall94/sidewinder
+    volumes:
+      - app
+volumes:
+  app:
